@@ -181,7 +181,7 @@ def matrix_to_bytes(mat):
     array = [bytearray(x) for x in np.array(mat).T.tolist()]
     return b''.join(array)
     
-#takes a 16 byte plaintext and encrypts it with the given 16 byte key 
+#takes a 16 byte plaintext and encrypts it with the given 16 byte key using AES
 def encrypt(pt, key):
     round_keys = key_expansion(key)
     round_keys = [to_4x4(x) for x in round_keys]
@@ -194,7 +194,8 @@ def encrypt(pt, key):
             ct_array = mixcolumn_forward(ct_array)
         ct_array = xor_4x4_arrays(ct_array,round_keys[i])
     return matrix_to_bytes(ct_array)
-    
+
+#takes a 16 byte ciphertext and decrypts it with the given 16 byte key using AES
 def decrypt(ct, key):
     round_keys = key_expansion(key)
     round_keys = [to_4x4(x) for x in round_keys]
@@ -207,8 +208,3 @@ def decrypt(ct, key):
         ct_array = bytesub_backward(ct_array)
     ct_array = xor_4x4_arrays(ct_array, round_keys[0])
     return matrix_to_bytes(ct_array)
-        
-
-#TODO: 
-#
-#      decrypt
