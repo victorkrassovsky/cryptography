@@ -2,9 +2,12 @@ import numpy as np
 import aes128
 import os
 
-#xors two 16 byte blocks
+#xors two byte blocks of different sizes
 def xor_blocks(b1,b2):
-    return bytes(a^b for a,b in zip(b1,b2))
+    if(len(b1)>len(b2)):
+        return bytes(a^b for a,b in zip(b1[:len(b2)],b2))
+    else:
+        return bytes(a^b for a,b in zip(b1,b2[:len(b1)]))
 
 #converts an array of bytes to a single byte string
 def array_to_string(arr):
@@ -14,14 +17,11 @@ def array_to_string(arr):
 #returns a string of bytes corresponding to the cipher text
 #note: if the end of the plaintext ends in \x00, it will be removed due to padding
 def aes_128_ctr_encrypt(plaintext, key, nonce=os.urandom(8)):
-    pt = bytes(plaintext, 'utf-8')
-    pad = 16 - (len(pt) % 16)
-    pt = pt + bytes(pad)
-    pt_array = [pt[i:i+16] for i in range(0,len(pt),16)]
-    ct_array = [None]*len(pt_array)
+    ct_array = None*(len(plaintext)/8)
     for i in range(0,len(pt_array)):
         counter = i.to_bytes(8,'big')
-        ct_array[i] = xor_blocks(aes128.encrypt(nonce + counter,key),pt_array[i])
+        block = aes128.encrypt(nonce + counter)
+        ct_array[i] = xor_blocks(block,pt_array[i])
     return nonce + array_to_string(ct_array)
 
 
@@ -35,8 +35,6 @@ def aes_128_ctr_decrypt(ct, key):
         counter = i.to_bytes(8,'big')
         pt_array[i] = xor_blocks(aes128.encrypt(nonce + counter,key),ct_array[i])
     pt = array_to_string(pt_array)
-    return pt.decode('utf-8').rstrip('\x00')
+    return pt
 
 
-
-    

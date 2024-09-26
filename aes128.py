@@ -182,8 +182,7 @@ def to_4x4(array):
     return np.array([array[i:i+4] for i in range(0,len(array)-3,4)]).T.tolist()
 
 def matrix_to_bytes(mat):
-    array = [bytearray(x) for x in np.array(mat).T.tolist()]
-    return b''.join(array)
+    return b''.join([bytearray(x) for x in np.array(mat).T.tolist()])
     
 #takes a 16 byte plaintext and encrypts it with the given 16 byte key using AES
 def encrypt(pt, key):
