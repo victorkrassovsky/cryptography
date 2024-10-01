@@ -7,14 +7,14 @@ def pad_to_512(b):
 
 # xors two 4 byte words
 def xor_words(b1,b2):
-    return b''.joint([(x^y).to_bytes(1,'big') for x,y in zip(b1,b2)])
+    return b''.join([(x^y).to_bytes(1,'big') for x,y in zip(b1,b2)])
 
 #xors three 4 byte words
 def xor_three_words(b1,b2,b3):
     return xor_words(b1,xor_words(b2,b3))
 
 # right rotates a 4 byte word n times
-def right_rotate_words(word, n):
+def right_rotate_word(word, n):
     b = int.from_bytes(word,'big')
     n = n%32
     new_word = (b >> n) ^ ((b%(1<<n)) << (32-n))
@@ -29,11 +29,11 @@ def right_shift_word(word, n):
 
 #ands two 4 byte words
 def and_words(b1,b2):
-    return b''.join([x & y for x,y in zip(b1,b2)])
+    return b''.join([(x & y).to_bytes(1,'big') for x,y in zip(b1,b2)])
 
 #nots a 4 byte word
 def not_word(by):
-    return b''.join([~x for x in by])
+    return b''.join([((1<<8)-1-x).to_bytes(1,'big') for x in by])
 
 #sums a list of 4 byte words
 def add_words(b_list):
@@ -42,6 +42,8 @@ def add_words(b_list):
         total += int.from_bytes(b,'big')
     return (total % (1 << 32)).to_bytes(4)
 
+#produces 64 bytes that is a digest of the given input
+#(currently does not match test cases of actual sha-2)
 def sha256 (b):
     binary = pad_to_512(b)
     chunks = [binary[i:i+64] for i in range(0,len(binary),64)]
@@ -65,21 +67,40 @@ def sha256 (b):
         for i in range(16, 64):
             s0 = xor_three_words(right_rotate_word(w[i-15],7), right_rotate_word(w[i-15],18), right_shift_word(w[i-15],3))
             s1 = xor_three_words(right_rotate_word(w[i-2], 17), right_rotate_word(w[i-2],19), right_shift_word(w[i-2],10))
-            w[i] = add_words([int.from_bytes(w[i-16], 'big') + int.from_bytes(s0,'big') + int.from_bytes(w[i-7],'big') + int.from_bytes(s1,'big')])
-        a = h0
-        b = h1
-        c = h2
-        d = h3
-        e = h4
-        f = h5
-        g = h6
-        h = h7
+            w[i] = add_words([w[i-16], s0, w[i-7], s1])
+        a = h[0]
+        b = h[1]
+        c = h[2]
+        d = h[3]
+        e = h[4]
+        f = h[5]
+        g = h[6]
+        h_x = h[7]
         for i in range(64):
             s1 = xor_three_words(right_rotate_word(e,6),right_rotate_word(e, 11), right_rotate_word(e, 25))
             ch = xor_words(and_words(e,f), xor_words(not_word(e),g))
-            temp1 = add_words([h,s1,ch,k[i],w[i]])
+            temp1 = add_words([h_x,s1,ch,k[i],w[i]])
             s0 = xor_three_words(right_rotate_word(a,2),right_rotate_word(a,13), right_rotate_word(a,22))
             maj = xor_three_words(and_words(a,b), and_words(a,c), and_words(b,c))
-            temp2 = add_words([S0, maj])
+            temp2 = add_words([s0, maj])
+            h_x=g;
+            g = f
+            f = e
+            e = add_words([d, temp1])
+            d = c
+            c = b
+            b = a
+            a = add_words([temp1,temp2])
+        h[0] = add_words([h[0],a])
+        h[1] = add_words([h[1],b])
+        h[2] = add_words([h[2],c])
+        h[3] = add_words([h[3],d])
+        h[4] = add_words([h[4],e])
+        h[5] = add_words([h[5],f])
+        h[6] = add_words([h[6],g])
+        h[7] = add_words([h[7],h_x])
+    digest = b''.join(h)
+    return digest
+
 
 
