@@ -5,7 +5,7 @@ import os
 #takes a string, a 16 byte key and an optional iv and applies the cbc mode aes cipher to it
 def aes_128_cbc_encrypt(plaintext, key, iv=os.urandom(16)):
     pt = bytes(plaintext,'utf-8')
-    pad = 8-(len(pt)%8)
+    pad = 16-(len(pt)%16)
     pt = iv + pt + pad.to_bytes(1,'big')*pad
     pt_array = [pt[i:i+16] for i in range(0,len(pt),16)]
     ct_array = [None]*len(pt_array)
