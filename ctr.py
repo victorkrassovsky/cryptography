@@ -13,10 +13,10 @@ def xor_blocks(b1,b2):
 def array_to_string(arr):
     return b''.join(arr)
 
-#takes any string, 16 byte key and an optional nonce, and encrypts using aes128 ctr mode
+#takes a byte string, 16 byte key and an optional nonce, and encrypts using aes128 ctr mode
 #returns a string of bytes corresponding to the cipher text
-def aes_128_ctr_encrypt(plaintext, key, nonce=os.urandom(8)):
-    ct_array = None*(len(plaintext)/8)
+def aes_128_ctr_encrypt(pt, key, nonce=os.urandom(8)):
+    ct_array = None*(len(pt)/8)
     for i in range(0,len(pt_array)):
         counter = i.to_bytes(8,'big')
         block = aes128.encrypt(nonce + counter,key)
