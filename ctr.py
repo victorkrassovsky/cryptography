@@ -15,23 +15,27 @@ def array_to_string(arr):
 
 #takes a byte string, 16 byte key and an optional nonce, and encrypts using aes128 ctr mode
 #returns a string of bytes corresponding to the cipher text
-def aes_128_ctr_encrypt(pt, key, nonce=os.urandom(8)):
+def aes_128_ctr_encrypt(pt, key, nonce=os.urandom(8), endian='big'):
+    if len(nonce) != 8:
+        raise Exception("Nonce has incorrect length")
     ct_array = None*(len(pt)/8)
     for i in range(0,len(pt_array)):
-        counter = i.to_bytes(8,'big')
+        counter = i.to_bytes(8,endian)
         block = aes128.encrypt(nonce + counter,key)
         ct_array[i] = xor_blocks(block,pt_array[i])
     return nonce + bytes(8) + array_to_string(ct_array)
 
 
 #takes a string of bytes returned from encrypt method and returns corresponding plaintext
-def aes_128_ctr_decrypt(ct, key):
+def aes_128_ctr_decrypt(ct, key, endian='big'):
+    if len(ct) < 16:
+        raise Exception("Ciphertext too short")
     nonce = ct[0:16]
     ct = ct[16:]
     ct_array = [ct[i:i+16] for i in range(0,len(ct), 16)]
     pt_array = [None]*len(ct_array)
     for i in range(0,len(pt_array)):
-        counter = (int.from_bytes(nonce[8:16],'big') + i).to_bytes(8,'big')
+        counter = (int.from_bytes(nonce[8:16],endian) + i).to_bytes(8,endian)
         block = aes128.encrypt(nonce[0:8]+counter,key);
         pt_array[i] = xor_blocks(block,ct_array[i]);
     return b''.join(pt_array)
