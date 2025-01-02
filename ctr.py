@@ -15,7 +15,7 @@ def array_to_string(arr):
 
 #takes a byte string, 16 byte key and an optional nonce, and encrypts using aes128 ctr mode
 #returns a string of bytes corresponding to the cipher text
-def aes_128_ctr_encrypt(pt, key, nonce=os.urandom(8), endian='big'):
+def ctr_encrypt(pt, key, nonce=os.urandom(8), endian='big'):
     if len(nonce) != 8:
         raise Exception("Nonce has incorrect length")
     ct_array = None*(len(pt)/8)
@@ -27,7 +27,7 @@ def aes_128_ctr_encrypt(pt, key, nonce=os.urandom(8), endian='big'):
 
 
 #takes a string of bytes returned from encrypt method and returns corresponding plaintext
-def aes_128_ctr_decrypt(ct, key, endian='big'):
+def ctr_decrypt(ct, key, endian='big'):
     if len(ct) < 16:
         raise Exception("Ciphertext too short")
     nonce = ct[0:16]
