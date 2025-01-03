@@ -18,7 +18,8 @@ def array_to_string(arr):
 def ctr_encrypt(pt, key, nonce=os.urandom(8), endian='big'):
     if len(nonce) != 8:
         raise Exception("Nonce has incorrect length")
-    ct_array = None*(len(pt)/8)
+    pt_array = [pt[i:i+16] for i in range(0, len(pt), 16)]
+    ct_array = [None]*len(pt_array)
     for i in range(0,len(pt_array)):
         counter = i.to_bytes(8,endian)
         block = aes128.encrypt(nonce + counter,key)
