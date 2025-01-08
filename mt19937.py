@@ -1,5 +1,3 @@
-# Mersenne Twister PRNG
-# generates psudo-random 32 bit numbers
 class Mt19937:
     def __init__(self, seed):
         n = 624
@@ -13,7 +11,7 @@ class Mt19937:
         self.state_array[0] = seed
         
         for i in range(1, n):
-            seed = f * (seed ^ (seed >> (w-2))) + i;
+            seed = (f * (seed ^ (seed >> (w-2)))) % (1 << 32) + i;
             self.state_array[i] = seed
     
     def random_32bits(self):
@@ -24,7 +22,7 @@ class Mt19937:
         t,c = 15, 0xefc60000
         l = 18
         f = 1812433253
-        UMASK = (d << r)
+        UMASK = (d << r) % (1 << 32)
         LMASK = (d >> (w-r))
         
         k = self.state_index
@@ -42,7 +40,7 @@ class Mt19937:
         j = k - (n-m);
         if j < 0:
             j += n;
-            
+
         x = self.state_array[j] ^ xA;
         self.state_array[k] = x;
         k += 1
@@ -51,9 +49,9 @@ class Mt19937:
             k = 0;
         self.state_index = k
         
-        y = (x ^ (x >> u)) % (1 << 32);
-        y = (y ^ ((y << s) & b)) % (1 << 32);
-        y = (y ^ ((y << t) & c)) % (1 << 32);
-        z = (y ^ (y >> l)) % (1 << 32);
+        y = x ^ (x >> u);
+        y = y ^ (((y << s) % (1<<32)) & b);
+        y = y ^ (((y << t) % (1 << 32)) & c);
+        z = y ^ (y >> l);
 
         return z
